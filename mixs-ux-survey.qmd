@@ -1,0 +1,214 @@
+---
+title: "MIxS-UX Survey on experiences on the use and development of MIxS metadata standards"
+author: "James A. Fellows Yates"
+---
+
+## Introduction
+
+This anonymous survey has been designed to get an overview of current awareness and experiences in using the 'Minimal Information About (X) Any Sequence' or 'MIxS' suite of metadata checklists designed by the Genomic Standards Consortium (GSC) for the reporting of nucleic acid sequencing data.
+
+The MIxS checklists aim to greatly enrich the contextual annotation around DNA and RNA data to improve accessibility, promote effective re-use, and maximise scientific (re-)discovery from the vasts amount of genomic data being produced by scientists today.
+
+The results from this survey will be used to help guide the NFDI4Microbiota 'MIxS-UX' FlexFund project improve the documentation around MIxS.
+
+## Quarto document set up
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(janitor)
+library(stringr)
+library(tidyr)
+library(forcats)
+
+sessionInfo()
+```
+
+Raw data
+
+```{r}
+data_raw <- read_csv("MIxS Metadata Checklist Experience Survey_Submissions_2026-03-23.csv") |> janitor::clean_names()
+```
+
+Common functions:
+
+```{r}
+plot_count <- function(input_data, ycol, xcol, ylabel) {
+  ggplot(input_data, (aes(y = {{ ycol }}, x = {{ xcol }}))) +
+    geom_col() +
+    theme_minimal() +
+    labs(
+      y = ylabel,
+      x = "Number of respondees"
+    )
+}
+
+summarise_boolean <- function(input_data, column) {
+  input_data |> 
+    select({{ column }}) |> 
+    group_by({{ column }}) |> 
+    summarise(count = n()) |> 
+    arrange(count)
+}
+```
+
+## Survey Overview
+
+The survey ran from 2026-02-18 to 2026-03-24.
+An optional raffle was offered, with 3 small prizes (stickers, and other GSC merchandise) allocated.
+The survey was hosted on [https://tally.so](https://tally.so), and directly advertised on:
+
+- NFDI4Microbiota mailing list
+- Genomic Standard Consortium Slack
+- GSC mailing list
+- LinkedIn
+- Mastodon
+- ISBA Slack
+- Bluesky
+
+There were `r nrow(data_raw)` responses in total.
+
+## Survey Results
+
+### Demographics
+
+The geographic distribution of the responders were:
+
+```{r}
+geographic_loc <- data_raw |> 
+  select(what_country_is_your_institution_based_in) |> 
+  group_by(what_country_is_your_institution_based_in) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(what_country_is_your_institution_based_in = forcats::as_factor(what_country_is_your_institution_based_in))
+
+
+plot_count(geographic_loc, what_country_is_your_institution_based_in, count, 'Country of institution')
+```
+<!-- TODO Add colour/filled in map? -->
+
+The vast majority of responders come out of European countries, and other similar richer countries (USA, Australia, Israel).
+Again the largest portion of responders come out of Germany, reflecting the visibility of the survey to NFDI4Microbiota-associated researchers.
+
+The career stages of responders were
+
+```{r}
+analysis_career <- data_raw |> 
+  select(what_career_stage_are_you_in_or_equivalent) |> 
+  group_by(what_career_stage_are_you_in_or_equivalent) |> 
+  summarise(count = n())
+
+plot_count(analysis_career, what_career_stage_are_you_in_or_equivalent, count, 'Approximate career stage')
+  
+```
+
+Responders mostly are post-PhD level researchers, likely reflecting experienced researchers regularly handling data at scale.
+
+Responders were associated with the following consortia or projects:
+
+```{r}
+consortia_membership <- data_raw |> 
+  select(are_you_a_member_of_any_of_the_following_consortia) |> 
+  mutate(consortia = str_split(are_you_a_member_of_any_of_the_following_consortia, ', ')) |>
+  unnest() |> 
+  group_by(consortia) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(consortia = as_factor(consortia))
+
+plot_count(consortia_membership, consortia, count, 'Consortia')
+```
+
+Most respondees were not associated with a particular consortia, but NFDI4Microbiota and the National Microbiome Data Collaborative (NMDC), who are both heavy users/investors in the MIxS project were at the highest level.
+
+The fields that the responders worked in were:
+
+```{r}
+analysis_career <- data_raw |> 
+  select(what_scientific_field_s_do_you_work_in) |> 
+  mutate(fields = str_split(what_scientific_field_s_do_you_work_in, ', ')) |>
+  unnest() |> 
+  mutate(
+    fields = case_when(
+      fields == 'General biomolecular archaeology' ~ 'bioarchaeology',
+      fields == 'ancient DNA' ~ 'Paleogenomics',
+      fields == 'DNA metabarcoding' ~ 'Metabarcoding',
+      TRUE ~ fields
+    )
+  ) |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+
+plot_count(analysis_career, fields, count, 'Domain of research')
+```
+
+Most responders work in some form of (meta)genomics or handling sequencing data, reflecting the primary advertising locations (NFDI4Microbiota, Genomic Standards Consortium) - both of which have a heavy focus on microbial genomics.
+
+
+### Basic Questions
+
+WTo get a better idea in which context the responders were providing feedback from, we first asked whether the responders have in the past, or were currently, handling forms of nucleic acid sequencing data
+
+```{r}
+handling_data <- summarise_boolean(data_raw , do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc) |> 
+  mutate(do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc = as_factor(do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc))
+
+plot_count(handling_data, do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc, count, 'Actively handling nucleic acid sequencing data')
+```
+
+The majority of responders were/are handling sequencing data, as expected in terms of people who would be interested in working on or contributing to improving metadata annotation quality of sequencing data.
+
+Of those who were handling data, we then asked if within the context of their work, they had heard of the MIxS project.
+
+```{r}
+mixs_recognition <- data_raw |> 
+  filter(!is.na(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project)) |>
+  summarise_boolean(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project) |> 
+  mutate(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project = as_factor(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project))
+
+plot_count(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project, count, 'Heard of GSC MIxS project')
+```
+This is a useful metric, as we can therefore see that despite many researchers are handling sequencing data, less than half have heard of a metadata standards project that has been around since 2008 (MIGS) or 2011 (MIxS), despite adoption by major sequencing data repositories such as NCBI's SRA and EBI's ENA.
+
+A awareness campaign could be useful in this regard, also to attract in new contributors and refresh the project's working groups.
+
+Of those who had heard of the MIxS project:
+
+```{r}
+mixs_discovery <- data_raw |> 
+  select(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project) |> 
+  filter(!is.na(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project)) |> 
+  group_by(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project = forcats::as_factor(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project))
+
+plot_count(mixs_discovery, where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project, count, 'Where MIxS was first learnt/heard about')
+  
+```
+
+Showing the project is mostly known via word of mouth or through exposure during data upload.
+
+More specifically, if discovered via a publication, event, or social media, these venues were:
+
+```{r}
+data_raw |> 
+  select(if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location) |> 
+  filter(!is.na(if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location))
+```
+With the DOI being the original Yilmaz et al. (2011) paper in Nat. Biotech.
+
+### Usage of MIxS
+
+### Knowledge of MIxS
+
+### Contributing to MIxS
+
+### Technical Questions
+
+### Final Questions
+
