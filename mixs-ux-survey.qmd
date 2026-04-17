@@ -1,6 +1,8 @@
 ---
 title: "MIxS-UX Survey on experiences on the use and development of MIxS metadata standards"
 author: "James A. Fellows Yates"
+execute:
+  echo: false
 ---
 
 ## Introduction
@@ -21,6 +23,7 @@ library(janitor)
 library(stringr)
 library(tidyr)
 library(forcats)
+library(kableExtra)
 
 sessionInfo()
 ```
@@ -51,6 +54,18 @@ summarise_boolean <- function(input_data, column) {
     summarise(count = n()) |> 
     arrange(count)
 }
+
+report_boolean_percent <- function(input_data, column) {
+  handling_data_pc =  input_data |>
+    filter({{ column }} == 'Yes') |> 
+    pull(count) / 
+    sum(input_data$count) * 100
+  
+    input_data_total = sum(input_data$count)
+    
+    return(list(percent_yes = round(handling_data_pc, digits = 1), total = input_data_total))
+}
+
 ```
 
 ## Survey Overview
@@ -151,16 +166,21 @@ Most responders work in some form of (meta)genomics or handling sequencing data,
 
 ### Basic Questions
 
-WTo get a better idea in which context the responders were providing feedback from, we first asked whether the responders have in the past, or were currently, handling forms of nucleic acid sequencing data
+To get a better idea in which context the responders were providing feedback from, we first asked whether the responders have in the past, or were currently, handling forms of nucleic acid sequencing data
 
 ```{r}
 handling_data <- summarise_boolean(data_raw , do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc) |> 
   mutate(do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc = as_factor(do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc))
 
 plot_count(handling_data, do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc, count, 'Actively handling nucleic acid sequencing data')
+
+handling_data_pc = report_boolean_percent(handling_data, do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc)
+
+# handling_data_pc =  handling_data |> filter(do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc == 'Yes') |> pull(count) / sum(handling_data$count) * 100
+# handling_data_total = sum(handling_data$count)
 ```
 
-The majority of responders were/are handling sequencing data, as expected in terms of people who would be interested in working on or contributing to improving metadata annotation quality of sequencing data.
+The **`r handling_data_pc$percent_yes`%** of `r handling_data_pc$total` responders were/are handling sequencing data now or in the past, as expected in terms of people who would be interested in working on or contributing to improving metadata annotation quality of sequencing data.
 
 Of those who were handling data, we then asked if within the context of their work, they had heard of the MIxS project.
 
@@ -171,7 +191,13 @@ mixs_recognition <- data_raw |>
   mutate(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project = as_factor(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project))
 
 plot_count(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project, count, 'Heard of GSC MIxS project')
+
+mix_recognition_pc = report_boolean_percent(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project)
+
 ```
+
+In contrast, only **`r mix_recognition_pc$percent_yes`%** of `r mix_recognition_pc$total` had heard of the MIxS project.
+
 This is a useful metric, as we can therefore see that despite many researchers are handling sequencing data, less than half have heard of a metadata standards project that has been around since 2008 (MIGS) or 2011 (MIxS), despite adoption by major sequencing data repositories such as NCBI's SRA and EBI's ENA.
 
 A awareness campaign could be useful in this regard, also to attract in new contributors and refresh the project's working groups.
@@ -198,11 +224,65 @@ More specifically, if discovered via a publication, event, or social media, thes
 ```{r}
 data_raw |> 
   select(if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location) |> 
-  filter(!is.na(if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location))
+  filter(!is.na(if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location)) |> 
+  rename(`Source of discovery` = if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location) |> 
+  kableExtra::kable()
 ```
 With the DOI being the original Yilmaz et al. (2011) paper in Nat. Biotech.
 
+Only two of the people who remembered how they found MIxS were from events.
+However we asked responders if they had attended any GSC conference or event at all.
+
+```{r}
+mixs_events <- data_raw |> 
+  select(have_you_ever_attended_a_gsc_meeting_conference) |> 
+  filter(!is.na(have_you_ever_attended_a_gsc_meeting_conference)) |> 
+  summarise_boolean(have_you_ever_attended_a_gsc_meeting_conference) |> 
+  mutate(have_you_ever_attended_a_gsc_meeting_conference = as.factor(have_you_ever_attended_a_gsc_meeting_conference))
+
+plot_count(mixs_events, have_you_ever_attended_a_gsc_meeting_conference, count, 'Attended GSC conference or event')
+
+mixs_events_pc = report_boolean_percent(mixs_events, have_you_ever_attended_a_gsc_meeting_conference)
+```
+
+Of `r mixs_events_pc$total` responders **`r mixs_events_pc$percent_yes`% **have attended a GSC conference or event.
+This is not to be unexpected as likely GSC conferences or events are more likely to be heavier users or developers, as the events have been generally aimed at researchers with a strong interest in metadata standards. 
+
 ### Usage of MIxS
+
+We next asked whether the responders who handled nucleic acid sequencing data and had heard of MIxS about their usage of MIxS itself (not just awareness of the project), whether using a checklist or developing one.
+
+```{r}
+mixs_usage <- data_raw |> 
+  select(have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena) |> 
+  filter(!is.na(have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena)) |> 
+  summarise_boolean(have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena) |> 
+  mutate(have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena = as.factor(have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena))
+
+plot_count(mixs_usage, have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena, count, 'Used or developed a MIxS metadata checklist')
+
+mixs_usage_pc = report_boolean_percent(mixs_usage, have_you_ever_used_or_interacted_with_m_ix_s_in_any_way_whether_using_a_metadata_checklist_for_a_journal_article_implementing_the_schema_or_submitting_meta_data_e_g_to_nmdc_ncbi_or_ena)
+```
+
+Of the remaining responders (`r mixs_usage_pc$total`), **`r mixs_usage_pc$percent_yes`%** had interacted with MIxS in some form.
+
+The breakdown of the interactions are as follows:
+
+```{r}
+mixs_interaction <- data_raw |> 
+  select(in_which_role_or_context_have_you_used_m_ix_s) |> 
+  filter(!is.na(in_which_role_or_context_have_you_used_m_ix_s)) |> 
+  mutate(in_which_role_or_context_have_you_used_m_ix_s = str_replace_all(in_which_role_or_context_have_you_used_m_ix_s, "terms, extensions, combinations", "terms/extensions/combinations")) |> 
+  mutate(fields = str_split(in_which_role_or_context_have_you_used_m_ix_s, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+
+plot_count(mixs_interaction, fields, count, 'Interaction role with MIxS')
+```
 
 ### Knowledge of MIxS
 
