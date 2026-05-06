@@ -127,15 +127,16 @@ locale:
  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
 [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
 
-time zone: Europe/Berlin
+time zone: Europe/Athens
 tzcode source: system (glibc)
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] kableExtra_1.4.0 forcats_1.0.0    tidyr_1.3.1      stringr_1.5.1   
-[5] janitor_2.2.1    ggplot2_3.5.1    dplyr_1.1.4      readr_2.1.5     
+[1] patchwork_1.2.0  kableExtra_1.4.0 forcats_1.0.0    tidyr_1.3.1     
+[5] stringr_1.5.1    janitor_2.2.1    ggplot2_3.5.1    dplyr_1.1.4     
+[9] readr_2.1.5     
 
 loaded via a namespace (and not attached):
  [1] gtable_0.3.5      jsonlite_1.8.8    compiler_4.4.1    tidyselect_1.2.1 
@@ -223,7 +224,7 @@ dttm  (1): Submitted at
 </div>
 </div>
 </div>
-<p>Most respondees were not associated with a particular consortia, but NFDI4Microbiota and the National Microbiome Data Collaborative (NMDC), who are both heavy users/investors in the MIxS project were at the highest level.</p>
+<p>Most responders were not associated with a particular consortia, but NFDI4Microbiota and the National Microbiome Data Collaborative (NMDC), who are both heavy users/investors in the MIxS project were at the highest level.</p>
 <p>The fields that the responders worked in were:</p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
@@ -352,18 +353,188 @@ dttm  (1): Submitted at
 </div>
 </div>
 </div>
+<p>Most responders have been submitting or processing existing metadata, with only a smaller fraction actually developing or implementing the standard’s schemas themselves.</p>
+<p>We asked those who had been submitting or processing the metadata, where the primary location of such interactions were.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `cols` is now required when using `unnest()`.
+ℹ Please use `cols = c(fields)`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As expected, the vast bulk of the responders were interacting with databases associated with the INSDC consortium of sequencing data repositories (ENA, and NCBI).</p>
+<p>To get an idea in which ways metadata submitters/processing are actually handling the metadata themselves (filling in, validation, etc), we asked if they have used a validation tool, and if so which methods and tools they are using.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Very few of the responders (<strong>7</strong>) have actively have tried to validate metadata, and of thosethe tools they used:</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `cols` is now required when using `unnest()`.
+ℹ Please use `cols = c(fields)`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The MIxS developers were also interested to know whether researchers using the validation tools felt they were validating correctly - i.e., the validators checked the submitted metadata in the way they understood MIxS defined each term.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Even though there were few responders, approximately half felt the tools were not always validating correctly.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `cols` is now required when using `unnest()`.
+ℹ Please use `cols = c(fields)`.</code></pre>
+</div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">fields</th>
+<th style="text-align: right;">count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Custom scripts</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FAIR Data Station</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NCBI BioSample submission validation</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ENA submission validation</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Manually (by hand)</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Despite the small sample-size, the perceived discrepancies between the the validation tools output and the MIxS schema itself, it appears these occur across all validation tools.</p>
 </section>
 <section id="knowledge-of-mixs" class="level3">
 <h3 class="anchored" data-anchor-id="knowledge-of-mixs">Knowledge of MIxS</h3>
+<p>We next wanted to understand how much the responders knew of the MIxS standard, including core concepts and about the main checklists themselves.</p>
+<p>We first wanted to know the locations, if any, that the responders would read to get more information about MIxS.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `cols` is now required when using `unnest()`.
+ℹ Please use `cols = c(fields)`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The majority of responders to this question (<strong>26</strong>) refer to either the official/central MIxS website, the MIxS GitHub, or use data repository websites to get information on the MIxS standard.</p>
+<p>We then asked if responders were aware of the core MIxS concepts of terms, checklists, and extensions.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'concept'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We see that the the concept of a MIxS checklist, is the most well known (i.e, the full collection of terms for a specific sample type), however the more granular components are less well known.</p>
+<p>Similarly, we wanted to gauge approximately what were the more popular ‘core’ checklists and extensions, that generally represents the type of sequencing data being annotated, and the type of samples, respectively.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `cols` is now required when using `unnest()`.
+ℹ Please use `cols = c(fields)`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The most common checklists used were those associated with microbial ecology, partly reflecting the fields in which MIxS was generated from, as well as the networks that the author circulated the survey.</p>
+<p>We asked the same question for that of extensions.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `cols` is now required when using `unnest()`.
+ℹ Please use `cols = c(fields)`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mixs-ux-survey_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Most researchers responders have been working primarily on host and/or human</p>
+<hr>
+<!-- TODO MOVE TO CORRECT SECTIONS FROM HERE -->
 </section>
 <section id="contributing-to-mixs" class="level3">
 <h3 class="anchored" data-anchor-id="contributing-to-mixs">Contributing to MIxS</h3>
+<!-- Would like, or need to, contribute/request a new MIxS metadata term, or update an existing metadata term now or in the near future? -->
+<!-- Do you know how you would submit or request a new metadata term? -->
+<!--  Would like, or need to, contribute/request a new MIxS extension, or update an existing extension now or in the near future?-->
+<!-- Do you know how to submit or request a new extension? -->
+<!-- Have you previously been involved in developing a any part of MIxS (term, extension, checklist etc.)? -->
+<!-- If yes If you have previously been involved in developing a component of MIxS, which extension or checklist(s)? -->
+<!-- If you have contributed to MIxS, what was the hardest part? -->
+<!-- If you considered contributing to MIxS, but decided not to contribute, what stopped you? -->
+<!-- Would you like to get more involved in developing metadata standards within MIxS (either for the first time, or start again)? -->
 </section>
 <section id="technical-questions" class="level3">
 <h3 class="anchored" data-anchor-id="technical-questions">Technical Questions</h3>
+<!-- Which of the following formats are you familiar with? -->
+<!-- Are you aware that the MIxS schema is now available in LinkML and supported formats (JSON, etc)? -->
+<!-- Have you made use of the JSON or LinkML format to access MIxS schema? -->
+<!-- If yes, has this format improved your productivity? -->
 </section>
 <section id="final-questions" class="level3">
 <h3 class="anchored" data-anchor-id="final-questions">Final Questions</h3>
+<!-- Do you use other standards for metadata? -->
+<!-- If yes, which standards? -->
+<!-- What would you like see improved in the other standards? -->
+<!-- Is there anything you wish to expand upon from any of the questions on the survey or in general about sequencing data metadata? -->
 </section>
 </section>
 

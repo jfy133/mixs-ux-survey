@@ -24,6 +24,7 @@ library(stringr)
 library(tidyr)
 library(forcats)
 library(kableExtra)
+library(patchwork)
 
 sessionInfo()
 ```
@@ -43,7 +44,7 @@ plot_count <- function(input_data, ycol, xcol, ylabel) {
     theme_minimal() +
     labs(
       y = ylabel,
-      x = "Number of respondees"
+      x = "Number of responders"
     )
 }
 
@@ -135,7 +136,7 @@ consortia_membership <- data_raw |>
 plot_count(consortia_membership, consortia, count, 'Consortia')
 ```
 
-Most respondees were not associated with a particular consortia, but NFDI4Microbiota and the National Microbiome Data Collaborative (NMDC), who are both heavy users/investors in the MIxS project were at the highest level.
+Most responders were not associated with a particular consortia, but NFDI4Microbiota and the National Microbiome Data Collaborative (NMDC), who are both heavy users/investors in the MIxS project were at the highest level.
 
 The fields that the responders worked in were:
 
@@ -283,12 +284,223 @@ mixs_interaction <- data_raw |>
 
 plot_count(mixs_interaction, fields, count, 'Interaction role with MIxS')
 ```
+Most responders have been submitting or processing existing metadata, with only a smaller fraction actually developing or implementing the standard's schemas themselves.
+
+We asked those who had been submitting or processing the metadata, where the primary location of such interactions were.
+
+```{r}
+mixs_interaction_loc <- data_raw |> 
+  select(if_you_used_m_ix_s_as_a_data_provider_or_data_consumer_which_service_did_you_interact_with_m_ix_s) |> 
+  filter(!is.na(if_you_used_m_ix_s_as_a_data_provider_or_data_consumer_which_service_did_you_interact_with_m_ix_s)) |> 
+  mutate(if_you_used_m_ix_s_as_a_data_provider_or_data_consumer_which_service_did_you_interact_with_m_ix_s = str_replace_all(if_you_used_m_ix_s_as_a_data_provider_or_data_consumer_which_service_did_you_interact_with_m_ix_s, "website, GitHub", "website/GitHub")) |> 
+  mutate(fields = str_split(if_you_used_m_ix_s_as_a_data_provider_or_data_consumer_which_service_did_you_interact_with_m_ix_s, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+
+plot_count(mixs_interaction_loc, fields, count, 'Interaction location of MIxS submitters/processors')
+```
+
+As expected, the vast bulk of the responders were interacting with databases associated with the INSDC consortium of sequencing data repositories (ENA, and NCBI).
+
+To get an idea in which ways metadata submitters/processing are actually handling the metadata themselves (filling in, validation, etc), we asked if they have used a validation tool, and if so which methods and tools they are using.
+
+```{r fig.width = 10}
+mixs_ever_validated <- data_raw |> 
+  select(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling) |> 
+  filter(!is.na(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling)) |> 
+  mutate(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling = if_else(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling == "I didn't know that was possible", 
+                                                                                                                                                                         'No',
+                                                                                                                                                                         have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling)) |> 
+  summarise_boolean(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling)
+
+plot_count(mixs_ever_validated, have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling, count, 'Has attempted to validate against the MIxS schema')
+
+mixs_ever_validated_ct <- mixs_ever_validated |>
+  filter(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling == 'Yes') |>
+  pull(count)
+```
+
+Very few of the responders (**`r mixs_ever_validated_ct`**) have actively have tried to validate metadata, and of thosethe tools they used:
+
+```{r}
+mixs_ever_validated_tool <- data_raw |> 
+  select(if_yes_which_validator_s_have_you_used) |> 
+  filter(!is.na(if_yes_which_validator_s_have_you_used)) |> 
+  mutate(fields = str_split(if_yes_which_validator_s_have_you_used, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(mixs_ever_validated_tool, fields, count, 'If ever validated, tool used')
+```
+
+The MIxS developers were also interested to know whether researchers using the validation tools felt they were validating correctly - i.e., the validators checked the submitted metadata in the way they understood MIxS defined each term.
+
+```{r}
+mixs_validation_correctly <- data_raw |> 
+  select(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly) |> 
+  filter(!is.na(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly)) |> 
+  group_by(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly = forcats::as_factor(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly))
+
+plot_count(mixs_validation_correctly, from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly, count, 'Believed validators validated against MIxS correctly')
+```
+
+Even though there were few responders, approximately half felt the tools were not always validating correctly.
+
+```{r}
+data_raw |> 
+  select(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly,
+         if_yes_which_validator_s_have_you_used) |> 
+  filter(!is.na(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly) & str_detect(from_your_existing_knowledge_of_the_m_ix_s_standard_did_you_feel_the_validators_validate_m_ix_s_data_correctly, 'No')) |>       mutate(fields = str_split(if_yes_which_validator_s_have_you_used, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields)) |> kable()
+```
+
+Despite the small sample-size, the perceived discrepancies between the the validation tools output and the MIxS schema itself, it appears these occur across all validation tools.
 
 ### Knowledge of MIxS
 
+We next wanted to understand how much the responders knew of the MIxS standard, including core concepts and about the main checklists themselves.
+
+We first wanted to know the locations, if any, that the responders would read to get more information about MIxS.
+
+```{r}
+mixs_discovery_loc <- data_raw |> 
+  select(where_do_you_go_to_find_information_about_m_ix_s) |> 
+  filter(!is.na(where_do_you_go_to_find_information_about_m_ix_s)) |> 
+  mutate(where_do_you_go_to_find_information_about_m_ix_s = str_replace_all(where_do_you_go_to_find_information_about_m_ix_s, "e.g., NMDC, NCBI, ENA", "e.g. NMDC/NCBI/ENA")) |> 
+  mutate(fields = str_split(where_do_you_go_to_find_information_about_m_ix_s, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(mixs_discovery_loc, fields, count, 'Location of MIxS documentation used')
+  
+mixs_discovery_ct <- mixs_discovery_loc <- data_raw |> 
+  select(where_do_you_go_to_find_information_about_m_ix_s) |> 
+  filter(!is.na(where_do_you_go_to_find_information_about_m_ix_s)) |> 
+  nrow()
+```
+The majority of responders to this question (**`r mixs_discovery_ct`**) refer to either the official/central MIxS website, the MIxS GitHub, or use data repository websites to get information on the MIxS standard.
+
+We then asked if responders were aware of the core MIxS concepts of terms, checklists, and extensions.
+
+```{r}
+mixs_concepts <- data_raw |> 
+  select(starts_with('do_you_know_what')) |> 
+  pivot_longer(cols = starts_with('do_you_know_what'), 
+               names_to = 'concept', 
+               values_to = 'answer') |> 
+  filter(!is.na(answer)) |> 
+  mutate(
+    concept = str_remove(concept, "do_you_know_what_a_m_ix_s_"),
+    concept = str_remove(concept, "_is")
+    ) |> 
+  group_by(concept, answer) |> 
+  summarise(count = n()) |> 
+  mutate(concept = factor(concept, levels = c('term', 'extension', 'checklist')))
+
+ggplot(mixs_concepts, aes(x = concept, y = count, fill = answer)) +
+  geom_bar(position = "stack", stat='identity') +
+  theme_minimal()
+
+```
+
+We see that the the concept of a MIxS checklist, is the most well known (i.e, the full collection of terms for a specific sample type), however the more granular components are less well known.
+
+Similarly, we wanted to gauge approximately what were the more popular 'core' checklists and extensions, that generally represents the type of sequencing data being annotated, and the type of samples, respectively.
+
+```{r}
+mixs_checklists <- data_raw |> 
+  select(which_m_ix_s_checklists_have_you_used) |> 
+  filter(!is.na(which_m_ix_s_checklists_have_you_used)) |> 
+  mutate(fields = str_split(which_m_ix_s_checklists_have_you_used, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(mixs_checklists, fields, count, 'Checklists')
+
+```
+
+The most common checklists used were those associated with microbial ecology, partly reflecting the fields in which MIxS was generated from, as well as the networks that the author circulated the survey.
+
+We asked the same question for that of extensions.
+
+```{r}
+mixs_extensions <- data_raw |> 
+  select(which_m_ix_s_extensions_have_you_used) |> 
+  filter(!is.na(which_m_ix_s_extensions_have_you_used)) |> 
+  mutate(fields = str_split(which_m_ix_s_extensions_have_you_used, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(mixs_extensions, fields, count, 'Extensions')
+```
+Most researchers responders have been working primarily on host and/or human 
+
+---
+
+<!-- TODO MOVE TO CORRECT SECTIONS FROM HERE -->
+
 ### Contributing to MIxS
+
+<!-- Would like, or need to, contribute/request a new MIxS metadata term, or update an existing metadata term now or in the near future? -->
+
+<!-- Do you know how you would submit or request a new metadata term? -->
+
+<!--  Would like, or need to, contribute/request a new MIxS extension, or update an existing extension now or in the near future?-->
+
+
+<!-- Do you know how to submit or request a new extension? -->
+
+<!-- Have you previously been involved in developing a any part of MIxS (term, extension, checklist etc.)? --> 
+
+<!-- If yes If you have previously been involved in developing a component of MIxS, which extension or checklist(s)? -->
+
+
+<!-- If you have contributed to MIxS, what was the hardest part? -->
+
+<!-- If you considered contributing to MIxS, but decided not to contribute, what stopped you? -->
+
+<!-- Would you like to get more involved in developing metadata standards within MIxS (either for the first time, or start again)? -->
+
 
 ### Technical Questions
 
+<!-- Which of the following formats are you familiar with? -->
+
+<!-- Are you aware that the MIxS schema is now available in LinkML and supported formats (JSON, etc)? -->
+
+<!-- Have you made use of the JSON or LinkML format to access MIxS schema? -->
+
+<!-- If yes, has this format improved your productivity? -->
+
 ### Final Questions
 
+<!-- Do you use other standards for metadata? --> 
+
+<!-- If yes, which standards? -->
+
+<!-- What would you like see improved in the other standards? -->
+
+<!-- Is there anything you wish to expand upon from any of the questions on the survey or in general about sequencing data metadata? -->
