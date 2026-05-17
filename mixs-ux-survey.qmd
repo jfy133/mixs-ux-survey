@@ -48,6 +48,18 @@ plot_count <- function(input_data, ycol, xcol, ylabel) {
     )
 }
 
+plot_stacked_count <- function(input_data, ycol, xcol, xgroup, ylabel, xgroup_label) {
+  ggplot(input_data, (aes(y = {{ ycol }}, x = {{ xcol }}, fill = {{ xgroup }}))) +
+    geom_col() +
+    theme_minimal() +
+    labs(
+      y = ylabel,
+      x = "Number of responders",
+      fill = xgroup_label
+    ) +
+    theme(legend.position = "bottom")
+}
+
 summarise_boolean <- function(input_data, column) {
   input_data |> 
     select({{ column }}) |> 
@@ -456,27 +468,98 @@ mixs_extensions <- data_raw |>
 
 plot_count(mixs_extensions, fields, count, 'Extensions')
 ```
-Most researchers responders have been working primarily on host and/or human 
-
----
-
-<!-- TODO MOVE TO CORRECT SECTIONS FROM HERE -->
+Most researchers responders have been working primarily on host and/or human associated data.
 
 ### Contributing to MIxS
 
-<!-- Would like, or need to, contribute/request a new MIxS metadata term, or update an existing metadata term now or in the near future? -->
+To better understand impressions and experiences about contributing with MIxS, we asked a range of questions related to how researchers and collaborate or work directly on the project.
 
-<!-- Do you know how you would submit or request a new metadata term? -->
+First we wanted to know how many of the responders were considering now or in the near future contributing or updating an existing term.
+Additionally, we want to know whether these responders would know knew what the procedure would be for a community contribution.
 
-<!--  Would like, or need to, contribute/request a new MIxS extension, or update an existing extension now or in the near future?-->
+```{r}
+mixs_contribute_term <- data_raw |> 
+  select(would_like_or_need_to_contribute_request_a_new_m_ix_s_metadata_term_or_update_an_existing_metadata_term_now_or_in_the_near_future, have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |> 
+  filter(!is.na(would_like_or_need_to_contribute_request_a_new_m_ix_s_metadata_term_or_update_an_existing_metadata_term_now_or_in_the_near_future)) |> 
+  mutate(fields = str_split(would_like_or_need_to_contribute_request_a_new_m_ix_s_metadata_term_or_update_an_existing_metadata_term_now_or_in_the_near_future, ', '),
+         group = have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |>
+  unnest() |> 
+  group_by(fields, group) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
 
+mixs_contribute_term_knowledge <- data_raw |> 
+  select(do_you_know_how_you_would_submit_or_request_a_new_metadata_term, have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |> 
+  filter(!is.na(do_you_know_how_you_would_submit_or_request_a_new_metadata_term)) |> 
+  mutate(fields = str_split(do_you_know_how_you_would_submit_or_request_a_new_metadata_term, ', '),
+         group = have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |>
+  unnest() |> 
+  group_by(fields, group) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
 
-<!-- Do you know how to submit or request a new extension? -->
+plot_stacked_count(mixs_contribute_term, fields, count, group, 'Considering contributing a new or update a term', "Previously contributed") + plot_stacked_count(mixs_contribute_term_knowledge, fields, count, group, 'Know how to contributing a new or update a term', "Previously contributed") +
+  plot_annotation(tag_levels = 'A')
 
-<!-- Have you previously been involved in developing a any part of MIxS (term, extension, checklist etc.)? --> 
+```
+Of the responders that responded to the survey, and were familiar with MIxS, more than half said they were considering now  or in the new future.
+Few of the responders had actually contributed or updated a MIxS term previously.
+Of the 14 responders who were considering contributing or updating an existing MIxS term, almost half did not know how they would do so.
 
-<!-- If yes If you have previously been involved in developing a component of MIxS, which extension or checklist(s)? -->
+We then asked the same question however about contributing a new or updating an existing extension.
 
+```{r}
+mixs_contribute_extensions <- data_raw |> 
+  select(would_like_or_need_to_contribute_request_a_new_m_ix_s_extension_or_update_an_existing_extension_now_or_in_the_near_future, have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |> 
+  filter(!is.na(would_like_or_need_to_contribute_request_a_new_m_ix_s_extension_or_update_an_existing_extension_now_or_in_the_near_future)) |> 
+  mutate(fields = str_split(would_like_or_need_to_contribute_request_a_new_m_ix_s_extension_or_update_an_existing_extension_now_or_in_the_near_future, ', '),
+         group = have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |>
+  unnest() |> 
+  group_by(fields, group) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+mixs_contribute_extensions_knowledge <- data_raw |> 
+  select(do_you_know_how_to_submit_or_request_a_new_extension, have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |> 
+  filter(!is.na(do_you_know_how_to_submit_or_request_a_new_extension)) |> 
+  mutate(fields = str_split(do_you_know_how_to_submit_or_request_a_new_extension, ', '),
+         group = have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |>
+  unnest() |> 
+  group_by(fields, group) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_stacked_count(mixs_contribute_extensions, fields, count, group, 'Considering contributing a new or update an extension', "Previously contributed") + 
+  plot_stacked_count(mixs_contribute_extensions_knowledge, fields, count, group, "Know how to contributing a new or update an extension", "Previously contributed") + 
+  plot_annotation(tag_levels = 'A')
+
+```
+
+The distribution of Yes/No answers for both terms and also extensions are mostly equivalent, with slightly less people planning on contributing an extension knowing how the would do so.
+
+Of the the 2 responders who had previously contributed, they had contributed to:
+
+```{r}
+mixs_which_previously_contributed <- data_raw |> 
+  select(if_you_have_previously_been_involved_in_developing_a_component_of_m_ix_s_which_extension_or_checklist_s) |> 
+  filter(!is.na(if_you_have_previously_been_involved_in_developing_a_component_of_m_ix_s_which_extension_or_checklist_s)) |> 
+  mutate(fields = str_split(if_you_have_previously_been_involved_in_developing_a_component_of_m_ix_s_which_extension_or_checklist_s, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(mixs_which_previously_contributed, fields, count, 'Checklists')
+```
+
+In this case one responder had contributed to all, suggesting the responder as an original architect of the MIxS standard.
+
+We asked <!-- CONTINUE FROM HERE -->
 
 <!-- If you have contributed to MIxS, what was the hardest part? -->
 
@@ -484,6 +567,19 @@ Most researchers responders have been working primarily on host and/or human
 
 <!-- Would you like to get more involved in developing metadata standards within MIxS (either for the first time, or start again)? -->
 
+```{r}
+mixs_future_involvement <- data_raw |> 
+  select(would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again) |> 
+  filter(!is.na(would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again)) |> 
+  group_by(would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again = forcats::as_factor(would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again))
+
+plot_count(mixs_future_involvement, would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again, count, 'Interested in contributing to MIxS')
+```
+
+Despite the high number of responders not previously contributing, and a mixture of confidence in knowing how to contribute, most responders familiar with MIxS are interested in getting involved in developing the standard.
 
 ### Technical Questions
 
