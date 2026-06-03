@@ -45,8 +45,8 @@ ul.task-list li input[type="checkbox"] {
 
 <body class="quarto-light">
 
-<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
   <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
@@ -65,8 +65,11 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#wider-context" id="toc-wider-context" class="nav-link" data-scroll-target="#wider-context">Wider context</a></li>
   </ul></li>
   <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a></li>
+  <li><a href="#acknowledgements" id="toc-acknowledgements" class="nav-link" data-scroll-target="#acknowledgements">Acknowledgements</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="mixs-ux-survey.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
 <main class="content" id="quarto-document-content">
 
@@ -191,8 +194,7 @@ loaded via a namespace (and not attached):
 <h2 class="anchored" data-anchor-id="survey-responses">Survey Responses</h2>
 <section id="demographics" class="level3">
 <h3 class="anchored" data-anchor-id="demographics">Demographics</h3>
-<p>To get a better idea of who the responders were, we can look at the geographic dist</p>
-<p>The geographic distribution of the responders were:</p>
+<p>To get a better idea of who the responders were, we can look at the geographic distribution of responders.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -203,7 +205,7 @@ loaded via a namespace (and not attached):
 </div>
 </div>
 <p>The vast majority of responders come out of European countries, and other similar richer countries (USA, Australia, Israel). Again the largest portion of responders come out of Germany, reflecting the visibility of the survey to NFDI4Microbiota-associated researchers.</p>
-<p>We asked what career state the responder was in, and if they were associated with any relevant MIxS consortia</p>
+<p>We asked what career state the responder was in, and if they were associated with any relevant MIxS consortia.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -250,7 +252,7 @@ loaded via a namespace (and not attached):
 </div>
 </div>
 <p>Only <strong>47.3%</strong> of 55 had heard of the MIxS project.</p>
-<p>This is a useful metric, as we can therefore see that despite many researchers are handling sequencing data, less than half have heard of a metadata standards project that has been around since 2008 (MIGS) or 2011 (MIxS), despite adoption by major sequencing data repositories such as NCBI’s SRA and EBI’s ENA. A awareness campaign could be useful in this regard, also to attract in new contributors and refresh the project’s working groups.</p>
+<p>This is a useful metric, as we can therefore see that despite many researchers are handling sequencing data, less than half have heard of a metadata standards project that has been around since 2008 (MIGS) or 2011 (MIxS), despite adoption by major sequencing data repositories such as NCBI’s SRA and EBI’s ENA. An awareness campaign could be useful in this regard, also to attract in new contributors and refresh the project’s working groups.</p>
 <p>This is particularly as the project is mostly known via word of mouth or through exposure during data upload.</p>
 <p>More specifically, if discovered via a publication, event, or social media, these venues were:</p>
 <div class="cell">
@@ -287,7 +289,7 @@ loaded via a namespace (and not attached):
 </table>
 </div>
 </div>
-<p>With the DOI being the original Yilmaz et al.&nbsp;(2011) paper in Nat. Biotech.</p>
+<p>With the DOI being the original Yilmaz et al.&nbsp;(2011) paper in the journal Nature Biotechnology.</p>
 <p>Only two of the people who remembered how they found MIxS were from events. However we asked responders if they had attended any GSC conference or event at all.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -345,7 +347,7 @@ loaded via a namespace (and not attached):
 </div>
 </div>
 </div>
-<p>Very few of the responders (<strong>7</strong>) have actively have tried to validate metadata, and of those most of these were using the ENA submission form (reflecting the European centric make up of responders) or manually</p>
+<p>Very few of the responders (<strong>7</strong>) have actively have tried to validate metadata, and of those most of these were using the ENA submission form (reflecting the European centric make up of responders) or manually (e.g.&nbsp;using custom scripts).</p>
 <p>The MIxS developers were also interested to know whether researchers using the validation tools felt they were validating correctly - i.e., the validators checked the submitted metadata in the way they understood MIxS defined each term.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -503,7 +505,7 @@ loaded via a namespace (and not attached):
 </section>
 <section id="technical-questions" class="level3">
 <h3 class="anchored" data-anchor-id="technical-questions">Technical Questions</h3>
-<p>Due to the recent change of a custom schema system to the LinkML framework (<a href="https://dx.doi.org/10.1093/gigascience/giaf152">Moxon et al.&nbsp;2026</a>, we were interested in getting a better idea of the technical knowledge of the responders.</p>
+<p>Due to the recent change of a custom schema system to the LinkML framework (<a href="https://dx.doi.org/10.1093/gigascience/giaf152">Moxon et al.&nbsp;2026</a>), we were interested in getting a better idea of the technical knowledge of the responders.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -590,11 +592,15 @@ loaded via a namespace (and not attached):
 <li>Expected responsibilities (e.g.&nbsp;if metadata annotation/data upload is left to employees with more engineering roles)</li>
 </ul>
 <p>Across all responders, only 50% had heard of MIxS, and those who had had mostly had learnt about the standards through word-of-mouth through Peers or exposure from services implementing the standard. All responders who had heard of MIxS had used it - mostly in the role of a data uploader or downloader at INSDC repositories (EBI-ENA, NCBI-SRA etc.). <strong>This indicates that targeting ‘consumers’ as potential ‘starting points’ maybe an ideal starting point in prioritising which project documentation to developer, and could raise more interest in contributing to the project.</strong></p>
-<p>Most responders who were aware of MIxS indicated they primarily got their information about MIxS from the MIxS GitHub repository (https://github.com/GenomicsStandardsConsortium/mixs) and associated project website (https://genomicsstandardsconsortium.github.io/mixs/), or third-party implementers such as ENA or SRA, rather than the GSC website (https://www.gensc.org/) or academic publications. <strong>This therefore suggests that the most suitable place for MIxS documentation would be on the MIxS GitHub repository.</strong></p>
+<p>Most responders who were aware of MIxS indicated they primarily got their information about MIxS from the MIxS GitHub repository (<a href="https://github.com/GenomicsStandardsConsortium/mixs">https://github.com/GenomicsStandardsConsortium/mixs</a>) and associated project website (<a href="https://genomicsstandardsconsortium.github.io/mixs/">https://genomicsstandardsconsortium.github.io/mixs/</a>), or third-party implementers such as ENA or SRA, rather than the GSC website (<a href="https://genomicsstandardsconsortium.github.io/mixs/">https://www.gensc.org/</a>) or academic publications. <strong>This therefore suggests that the most suitable place for MIxS documentation would be on the MIxS GitHub repository.</strong></p>
 <p>In terms of familiarity with the project, almost all responders familiar with MIxS understood what a MIxS <em>checklist</em> was, however the concepts of an <em>extension</em> or <em>term</em> were less well known. <strong>This suggests that information about basic MIxS concepts need to be better described or more clearly placed to ensure understanding of how the standard works at a fundamental level.</strong></p>
 <p>The MIMS, MIMAG, and MIMARKS checklists from human or host-associated samples were the most commonly used by responders. This likely reflects the original history and background of the project, that primarily came out of microbiology-related communities. <strong>The popularity of MIMS, MIMAG, and MIMARK checklists could be used to guide what types of examples or training material could be developed in an improved MIxS documentation framework, but also sources of potential test users of such material.</strong></p>
 <p>While the vast majority of responders have not previously contributed to MIxS, more than a third were interested in doing so (either via a term or extension). <strong>The main factors for not previously contributing was simply time or not knowing how to contribute (with a smaller number not knowing whether they were welcome to do so).</strong> For the small number of responders (2) who had previously contributed, their largest obstacles had been an unclear submission process and being unfamiliar with the new LinkML schema framework MIxS recently transition to. This was reflected with less than half of the responders knowing about this transition, and thus are potentially unaware of the benefits. <strong>Despite these factors, the vast majority of responders were still interested in contributing to MIxS in some form - highlighting the relevancy of the project and it’s aims to responders.</strong></p>
 <p>A common forward-looking feedback given by multiple responders was an interest in seeing more interoperability and alignment between different standards, with the Darwin Core metadata standard being the most popular non-MIxS standard being utilised by responders.</p>
+</section>
+<section id="acknowledgements" class="level2">
+<h2 class="anchored" data-anchor-id="acknowledgements">Acknowledgements</h2>
+<p>This report was supported by the NFDI4Microbiota Flexfund ‘MIxS-UX’, funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – 460129525.</p>
 </section>
 
 </main>
