@@ -1,21 +1,33 @@
 ---
 title: "MIxS-UX Survey on experiences on the use and development of MIxS metadata standards"
 author: "James A. Fellows Yates"
+date: last-modified
+toc: true
 execute:
   echo: false
+  warning: false
+filters:
+  - collapse-output
+format:
+  html: default
+  pdf:
+    default: true
+    toc: true
+    number-sections: false
+    colorlinks: true
 ---
 
 ## Introduction
 
 This anonymous survey has been designed to get an overview of current awareness and experiences in using the 'Minimal Information About (X) Any Sequence' or 'MIxS' suite of metadata checklists designed by the Genomic Standards Consortium (GSC) for the reporting of nucleic acid sequencing data.
 
-The MIxS checklists aim to greatly enrich the contextual annotation around DNA and RNA data to improve accessibility, promote effective re-use, and maximise scientific (re-)discovery from the vasts amount of genomic data being produced by scientists today.
+The MIxS checklists aim to greatly enrich the contextual annotation around DNA and RNA data to improve accessibility, promote effective re-use, and maximise scientific (re-)discovery from the vast amount of genomic data being produced by scientists today.
 
 The results from this survey will be used to help guide the NFDI4Microbiota 'MIxS-UX' FlexFund project improve the documentation around MIxS.
 
-## Quarto document set up
-
 ```{r}
+#| output-fold: true
+#| output-summary: '(Click to see dependencies used to generate notebook)'
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -29,15 +41,15 @@ library(patchwork)
 sessionInfo()
 ```
 
-Raw data
-
 ```{r}
+## Load raw data
+
 data_raw <- read_csv("MIxS Metadata Checklist Experience Survey_Submissions_2026-03-23.csv") |> janitor::clean_names()
 ```
 
-Common functions:
-
 ```{r}
+## Common Functions
+
 plot_count <- function(input_data, ycol, xcol, ylabel) {
   ggplot(input_data, (aes(y = {{ ycol }}, x = {{ xcol }}))) +
     geom_col() +
@@ -81,7 +93,16 @@ report_boolean_percent <- function(input_data, column) {
 
 ```
 
-## Survey Overview
+## Key Takeaways
+
+1. Most responders are interested in both using and contributing to MIxS.
+2. Most responders were working at a post-doctoral level or higher.
+3. The MIxS GitHub repository and/or the associated website is the primary source of information on MIxS.
+5. Familiarity with core MIxS concepts by responders is mixed.
+7. Primary blockers to new contributors are lack of time or not knowing how to contribute.
+8. MIMS, MIMAG, and MIMARK checklists were most popular, and good targets for documentation examples and training material.
+
+## Survey Structure
 
 The survey ran from 2026-02-18 to 2026-03-24.
 An optional raffle was offered, with 3 small prizes (stickers, and other GSC merchandise) allocated.
@@ -95,15 +116,25 @@ The survey was hosted on [https://tally.so](https://tally.so), and directly adve
 - ISBA Slack
 - Bluesky
 
-There were `r nrow(data_raw)` responses in total.
+Questions were grouped into the following sections:
 
-## Survey Results
+- Demographic questions
+- Basic questions
+- Usage of MIxS
+- Knowledge of MIxS
+- Contributing to MixS
+- Technical Questions
+- Wider context
+
+There were **`r nrow(data_raw)`** responses in total.
+
+## Survey Responses
 
 ### Demographics
 
-The geographic distribution of the responders were:
+To get a better idea of who the responders were, we can look at the geographic distribution of responders.
 
-```{r}
+```{r fig.width=10, fig.height=4}
 geographic_loc <- data_raw |> 
   select(what_country_is_your_institution_based_in) |> 
   group_by(what_country_is_your_institution_based_in) |> 
@@ -112,30 +143,30 @@ geographic_loc <- data_raw |>
   mutate(what_country_is_your_institution_based_in = forcats::as_factor(what_country_is_your_institution_based_in))
 
 
-plot_count(geographic_loc, what_country_is_your_institution_based_in, count, 'Country of institution')
+## Copied from https://stackoverflow.com/a/30707148/11502856 (Stackoverflow, hbrmster, CC BY-SA 4.0)
+world_map = map_data("world") |> left_join(geographic_loc |> rename(region = what_country_is_your_institution_based_in)) |> replace_na(list(count = 0))
+
+distinct(world_map, region, count) %>% 
+  ggplot(aes(map_id = region)) +
+  geom_map(map = world_map, aes(fill = count), colour = "#7f7f7f", size = 0.2) +
+  scale_fill_continuous(low = "white", high = "#0f75bc", guide = "colorbar") +
+  expand_limits(x = world_map$long, y = world_map$lat) +
+  labs(fill = "Nr. responders", x = "", y = "") +
+  theme_minimal() + plot_count(geographic_loc, what_country_is_your_institution_based_in, count, 'Country of institution') + plot_annotation(tag_levels = 'A') + plot_layout(widths = c(3,1))
+
 ```
-<!-- TODO Add colour/filled in map? -->
 
 The vast majority of responders come out of European countries, and other similar richer countries (USA, Australia, Israel).
 Again the largest portion of responders come out of Germany, reflecting the visibility of the survey to NFDI4Microbiota-associated researchers.
 
-The career stages of responders were
+We asked what career state the responder was in, and if they were associated with any relevant MIxS consortia.
 
-```{r}
+```{r fig.width=10, fig.height=4}
 analysis_career <- data_raw |> 
   select(what_career_stage_are_you_in_or_equivalent) |> 
   group_by(what_career_stage_are_you_in_or_equivalent) |> 
   summarise(count = n())
 
-plot_count(analysis_career, what_career_stage_are_you_in_or_equivalent, count, 'Approximate career stage')
-  
-```
-
-Responders mostly are post-PhD level researchers, likely reflecting experienced researchers regularly handling data at scale.
-
-Responders were associated with the following consortia or projects:
-
-```{r}
 consortia_membership <- data_raw |> 
   select(are_you_a_member_of_any_of_the_following_consortia) |> 
   mutate(consortia = str_split(are_you_a_member_of_any_of_the_following_consortia, ', ')) |>
@@ -145,9 +176,13 @@ consortia_membership <- data_raw |>
   arrange(count) |> 
   mutate(consortia = as_factor(consortia))
 
-plot_count(consortia_membership, consortia, count, 'Consortia')
-```
 
+plot_count(analysis_career, what_career_stage_are_you_in_or_equivalent, count, 'Approximate career stage') + 
+  plot_count(consortia_membership, consortia, count, 'Consortia') +
+  plot_annotation(tag_levels = 'A')
+  
+```
+Most responders were later in academic career stage, either as Post Docs or assistant professor stages.
 Most responders were not associated with a particular consortia, but NFDI4Microbiota and the National Microbiome Data Collaborative (NMDC), who are both heavy users/investors in the MIxS project were at the highest level.
 
 The fields that the responders worked in were:
@@ -179,7 +214,7 @@ Most responders work in some form of (meta)genomics or handling sequencing data,
 
 ### Basic Questions
 
-To get a better idea in which context the responders were providing feedback from, we first asked whether the responders have in the past, or were currently, handling forms of nucleic acid sequencing data
+To get a better idea in which context the responders were providing feedback from, we first asked whether the responders have in the past, or were currently, handling forms of nucleic acid sequencing data.
 
 ```{r}
 handling_data <- summarise_boolean(data_raw , do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc) |> 
@@ -188,36 +223,18 @@ handling_data <- summarise_boolean(data_raw , do_you_currently_handle_or_have_yo
 plot_count(handling_data, do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc, count, 'Actively handling nucleic acid sequencing data')
 
 handling_data_pc = report_boolean_percent(handling_data, do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc)
-
-# handling_data_pc =  handling_data |> filter(do_you_currently_handle_or_have_you_previously_handled_any_form_of_nucleic_acid_sequencing_data_dna_rna_etc == 'Yes') |> pull(count) / sum(handling_data$count) * 100
-# handling_data_total = sum(handling_data$count)
 ```
 
 The **`r handling_data_pc$percent_yes`%** of `r handling_data_pc$total` responders were/are handling sequencing data now or in the past, as expected in terms of people who would be interested in working on or contributing to improving metadata annotation quality of sequencing data.
 
-Of those who were handling data, we then asked if within the context of their work, they had heard of the MIxS project.
+Of those who were handling data, we then asked if within the context of their work, they had heard of the MIxS project and where they had heard of it initially.
 
-```{r}
+```{r fig.width=10, fig.height=4}
 mixs_recognition <- data_raw |> 
   filter(!is.na(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project)) |>
   summarise_boolean(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project) |> 
   mutate(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project = as_factor(have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project))
 
-plot_count(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project, count, 'Heard of GSC MIxS project')
-
-mix_recognition_pc = report_boolean_percent(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project)
-
-```
-
-In contrast, only **`r mix_recognition_pc$percent_yes`%** of `r mix_recognition_pc$total` had heard of the MIxS project.
-
-This is a useful metric, as we can therefore see that despite many researchers are handling sequencing data, less than half have heard of a metadata standards project that has been around since 2008 (MIGS) or 2011 (MIxS), despite adoption by major sequencing data repositories such as NCBI's SRA and EBI's ENA.
-
-A awareness campaign could be useful in this regard, also to attract in new contributors and refresh the project's working groups.
-
-Of those who had heard of the MIxS project:
-
-```{r}
 mixs_discovery <- data_raw |> 
   select(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project) |> 
   filter(!is.na(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project)) |> 
@@ -226,11 +243,20 @@ mixs_discovery <- data_raw |>
   arrange(count) |> 
   mutate(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project = forcats::as_factor(where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project))
 
-plot_count(mixs_discovery, where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project, count, 'Where MIxS was first learnt/heard about')
-  
+plot_count(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project, count, 'Heard of GSC MIxS project') + 
+  plot_count(mixs_discovery, where_did_you_first_learn_or_hear_about_the_gs_cs_m_ix_s_project, count, 'Where MIxS was first learnt/heard about') +
+  plot_annotation(tag_levels = 'A')
+
+mix_recognition_pc = report_boolean_percent(mixs_recognition, have_you_heard_of_the_genomic_standards_consortiums_m_ix_s_project)
+
 ```
 
-Showing the project is mostly known via word of mouth or through exposure during data upload.
+Only **`r mix_recognition_pc$percent_yes`%** of `r mix_recognition_pc$total` had heard of the MIxS project.
+
+This is a useful metric, as we can therefore see that despite many researchers are handling sequencing data, less than half have heard of a metadata standards project that has been around since 2008 (MIGS) or 2011 (MIxS), despite adoption by major sequencing data repositories such as NCBI's SRA and EBI's ENA.
+An awareness campaign could be useful in this regard, also to attract in new contributors and refresh the project's working groups.
+
+This is particularly as the project is mostly known via word of mouth or through exposure during data upload.
 
 More specifically, if discovered via a publication, event, or social media, these venues were:
 
@@ -241,7 +267,7 @@ data_raw |>
   rename(`Source of discovery` = if_heard_in_a_publication_event_service_or_social_media_please_specify_the_name_or_location) |> 
   kableExtra::kable()
 ```
-With the DOI being the original Yilmaz et al. (2011) paper in Nat. Biotech.
+With the DOI being the original Yilmaz et al. (2011) paper in the journal Nature Biotechnology.
 
 Only two of the people who remembered how they found MIxS were from events.
 However we asked responders if they had attended any GSC conference or event at all.
@@ -281,7 +307,7 @@ Of the remaining responders (`r mixs_usage_pc$total`), **`r mixs_usage_pc$percen
 
 The breakdown of the interactions are as follows:
 
-```{r}
+```{r fig.height=3.5}
 mixs_interaction <- data_raw |> 
   select(in_which_role_or_context_have_you_used_m_ix_s) |> 
   filter(!is.na(in_which_role_or_context_have_you_used_m_ix_s)) |> 
@@ -318,9 +344,9 @@ plot_count(mixs_interaction_loc, fields, count, 'Interaction location of MIxS su
 
 As expected, the vast bulk of the responders were interacting with databases associated with the INSDC consortium of sequencing data repositories (ENA, and NCBI).
 
-To get an idea in which ways metadata submitters/processing are actually handling the metadata themselves (filling in, validation, etc), we asked if they have used a validation tool, and if so which methods and tools they are using.
+To get an idea in which ways metadata submitters/processing are actually handling the metadata themselves (filling in, validation, etc.), we asked if they have used a validation tool, and if so which methods and tools they are using.
 
-```{r fig.width = 10}
+```{r fig.width=10, fig.height=4}
 mixs_ever_validated <- data_raw |> 
   select(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling) |> 
   filter(!is.na(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling)) |> 
@@ -329,16 +355,6 @@ mixs_ever_validated <- data_raw |>
                                                                                                                                                                          have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling)) |> 
   summarise_boolean(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling)
 
-plot_count(mixs_ever_validated, have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling, count, 'Has attempted to validate against the MIxS schema')
-
-mixs_ever_validated_ct <- mixs_ever_validated |>
-  filter(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling == 'Yes') |>
-  pull(count)
-```
-
-Very few of the responders (**`r mixs_ever_validated_ct`**) have actively have tried to validate metadata, and of thosethe tools they used:
-
-```{r}
 mixs_ever_validated_tool <- data_raw |> 
   select(if_yes_which_validator_s_have_you_used) |> 
   filter(!is.na(if_yes_which_validator_s_have_you_used)) |> 
@@ -349,8 +365,16 @@ mixs_ever_validated_tool <- data_raw |>
   arrange(count) |> 
   mutate(fields = forcats::as_factor(fields))
 
-plot_count(mixs_ever_validated_tool, fields, count, 'If ever validated, tool used')
+plot_count(mixs_ever_validated, have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling, count, 'Has attempted to validate against the MIxS schema') +
+  plot_count(mixs_ever_validated_tool, fields, count, 'If ever validated, tool used') +
+  plot_annotation(tag_levels = 'A')
+
+mixs_ever_validated_ct <- mixs_ever_validated |>
+  filter(have_you_ever_attempted_to_specifically_validate_metadata_against_the_m_ix_s_standard_manually_or_with_specific_validation_tooling == 'Yes') |>
+  pull(count)
 ```
+
+Very few of the responders (**`r mixs_ever_validated_ct`**) have actively have tried to validate metadata, and of those most of these were using the ENA submission form (reflecting the European centric make up of responders) or manually (e.g. using custom scripts).
 
 The MIxS developers were also interested to know whether researchers using the validation tools felt they were validating correctly - i.e., the validators checked the submitted metadata in the way they understood MIxS defined each term.
 
@@ -427,7 +451,7 @@ mixs_concepts <- data_raw |>
   mutate(concept = factor(concept, levels = c('term', 'extension', 'checklist')))
 
 ggplot(mixs_concepts, aes(x = concept, y = count, fill = answer)) +
-  geom_bar(position = "stack", stat='identity') +
+  geom_bar(position = "stack", stat = "identity") +
   theme_minimal()
 
 ```
@@ -448,7 +472,6 @@ mixs_checklists <- data_raw |>
   mutate(fields = forcats::as_factor(fields))
 
 plot_count(mixs_checklists, fields, count, 'Checklists')
-
 ```
 
 The most common checklists used were those associated with microbial ecology, partly reflecting the fields in which MIxS was generated from, as well as the networks that the author circulated the survey.
@@ -477,7 +500,7 @@ To better understand impressions and experiences about contributing with MIxS, w
 First we wanted to know how many of the responders were considering now or in the near future contributing or updating an existing term.
 Additionally, we want to know whether these responders would know knew what the procedure would be for a community contribution.
 
-```{r}
+```{r fig.width=10, fig.height=4}
 mixs_contribute_term <- data_raw |> 
   select(would_like_or_need_to_contribute_request_a_new_m_ix_s_metadata_term_or_update_an_existing_metadata_term_now_or_in_the_near_future, have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |> 
   filter(!is.na(would_like_or_need_to_contribute_request_a_new_m_ix_s_metadata_term_or_update_an_existing_metadata_term_now_or_in_the_near_future)) |> 
@@ -510,7 +533,7 @@ Of the 14 responders who were considering contributing or updating an existing M
 
 We then asked the same question however about contributing a new or updating an existing extension.
 
-```{r}
+```{r fig.width=10, fig.height=6}
 mixs_contribute_extensions <- data_raw |> 
   select(would_like_or_need_to_contribute_request_a_new_m_ix_s_extension_or_update_an_existing_extension_now_or_in_the_near_future, have_you_previously_been_involved_in_developing_a_any_part_of_m_ix_s_term_extension_checklist_etc) |> 
   filter(!is.na(would_like_or_need_to_contribute_request_a_new_m_ix_s_extension_or_update_an_existing_extension_now_or_in_the_near_future)) |> 
@@ -559,13 +582,29 @@ plot_count(mixs_which_previously_contributed, fields, count, 'Checklists')
 
 In this case one responder had contributed to all, suggesting the responder as an original architect of the MIxS standard.
 
-We asked <!-- CONTINUE FROM HERE -->
+We asked for those who had previously you have contributed to MIxS, what did they find was the hardest part?
 
-<!-- If you have contributed to MIxS, what was the hardest part? -->
+As there were only two responders who had contributed previously to MIxS, the numbers were low.
+One user found it difficult understanding submission processes (who to contact, how to get approval, how to get feedback, and how to submit the changes), whereas the other responder did not understand the structure of the new LinkML MIxS based schema.
 
-<!-- If you considered contributing to MIxS, but decided not to contribute, what stopped you? -->
+We also asked all responders familiar with MIxS that had considered to contribute to MIxS, but didn't - what factors contributed to them not doing so.
 
-<!-- Would you like to get more involved in developing metadata standards within MIxS (either for the first time, or start again)? -->
+```{r}
+considering_contrib_what_stops <- data_raw |> 
+  select(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you) |> 
+  filter(!is.na(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you)) |> 
+  mutate(fields = str_split(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(considering_contrib_what_stops, fields, count, 'Reason')
+
+```
+
+The two main reasons were time, but also similar to the feedback from the existing contributors - not knowing how to contribute remains a big issue.
 
 ```{r}
 mixs_future_involvement <- data_raw |> 
@@ -579,24 +618,146 @@ mixs_future_involvement <- data_raw |>
 plot_count(mixs_future_involvement, would_you_like_to_get_more_involved_in_developing_metadata_standards_within_m_ix_s_either_for_the_first_time_or_start_again, count, 'Interested in contributing to MIxS')
 ```
 
-Despite the high number of responders not previously contributing, and a mixture of confidence in knowing how to contribute, most responders familiar with MIxS are interested in getting involved in developing the standard.
+However, despite the high number of responders not previously contributing, and a mixture of confidence in knowing how to contribute, most responders familiar with MIxS are interested in getting involved in developing the standard.
 
 ### Technical Questions
 
-<!-- Which of the following formats are you familiar with? -->
+Due to the recent change of a custom schema system to the LinkML framework ([Moxon et al. 2026](https://dx.doi.org/10.1093/gigascience/giaf152)), we were interested in getting a better idea of the technical knowledge of the responders.
 
-<!-- Are you aware that the MIxS schema is now available in LinkML and supported formats (JSON, etc)? -->
+```{r}
+known_formats <- data_raw |> 
+  select(which_of_the_following_formats_are_you_familiar_with) |> 
+  filter(!is.na(which_of_the_following_formats_are_you_familiar_with)) |> 
+  mutate(fields = str_split(which_of_the_following_formats_are_you_familiar_with, ', ')) |>
+  unnest() |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
 
-<!-- Have you made use of the JSON or LinkML format to access MIxS schema? -->
+plot_count(known_formats, fields, count, 'Formats familiar with')
+```
+Common 'generic' computational formats such as YAML or JSON that are used across most software development and/or bioinformatics were most well-known, whereas dedicated linked-data or schema formats were less well known, likely as many genomics researchers handling metadata not having had training specifically in metadata management.
 
-<!-- If yes, has this format improved your productivity? -->
+We also asked specifically if responders knew that MIxS was now implemented within LinkML, and thus can be converted to multiple formats, and whether they had used such functionality and if so had it helped their productivity with using MIxS
 
-### Final Questions
+```{r fig.height=8, fig.width=8}
+linkml_awareness <- data_raw |> 
+  select(are_you_aware_that_the_m_ix_s_schema_is_now_available_in_link_ml_and_supported_formats_json_etc) |> 
+  filter(!is.na(are_you_aware_that_the_m_ix_s_schema_is_now_available_in_link_ml_and_supported_formats_json_etc)) |> 
+  group_by(are_you_aware_that_the_m_ix_s_schema_is_now_available_in_link_ml_and_supported_formats_json_etc) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(are_you_aware_that_the_m_ix_s_schema_is_now_available_in_link_ml_and_supported_formats_json_etc = forcats::as_factor(are_you_aware_that_the_m_ix_s_schema_is_now_available_in_link_ml_and_supported_formats_json_etc))
 
-<!-- Do you use other standards for metadata? --> 
+linkml_use <- data_raw |> 
+  select(have_you_made_use_of_the_json_or_link_ml_format_to_access_m_ix_s_schema) |> 
+  filter(!is.na(have_you_made_use_of_the_json_or_link_ml_format_to_access_m_ix_s_schema)) |> 
+  group_by(have_you_made_use_of_the_json_or_link_ml_format_to_access_m_ix_s_schema) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(have_you_made_use_of_the_json_or_link_ml_format_to_access_m_ix_s_schema = forcats::as_factor(have_you_made_use_of_the_json_or_link_ml_format_to_access_m_ix_s_schema))
 
-<!-- If yes, which standards? -->
+linkml_benefit <- data_raw |> 
+  select(if_yes_has_this_format_improved_your_productivity) |> 
+  filter(!is.na(if_yes_has_this_format_improved_your_productivity)) |>
+  mutate(if_yes_has_this_format_improved_your_productivity = fct(as.character(if_yes_has_this_format_improved_your_productivity), levels = c('1','2','3','4','5'))) |> 
+  group_by(if_yes_has_this_format_improved_your_productivity) |> 
+  count(if_yes_has_this_format_improved_your_productivity, .drop = F, name = 'count') |> 
+  arrange(count)
 
-<!-- What would you like see improved in the other standards? -->
+plot_count(linkml_awareness, are_you_aware_that_the_m_ix_s_schema_is_now_available_in_link_ml_and_supported_formats_json_etc, count, 'Awareness of LinkML version of MIxS') / 
+  (
+    plot_count(linkml_use, have_you_made_use_of_the_json_or_link_ml_format_to_access_m_ix_s_schema, count, 'Accessed MIxS via LinkML or JSON etc.') + 
+    plot_count(linkml_benefit, if_yes_has_this_format_improved_your_productivity, count, 'LinkML improved productivity (1: yes, 5: not at all)')
+  )  + plot_annotation(tag_levels = 'A')
+```
 
-<!-- Is there anything you wish to expand upon from any of the questions on the survey or in general about sequencing data metadata? -->
+
+Just under half of responders knew about the LinkML version of MIxS, but very few used this new functionality currently.
+However it has somewhat helped the few users who had used it.
+
+### Wider context
+
+Closing the survey, we asked if used other standards, and if so which one.
+
+To get wider feedback on the state of genomic metadata standards, we also asked what the responders would like to see improved in other standards.
+
+```{r}
+other_standard_used <- data_raw |> 
+  select(do_you_use_other_standards_for_metadata) |> 
+  filter(!is.na(do_you_use_other_standards_for_metadata)) |> 
+  group_by(do_you_use_other_standards_for_metadata) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(do_you_use_other_standards_for_metadata = forcats::as_factor(do_you_use_other_standards_for_metadata))
+
+other_standard_names <- data_raw |> 
+  select(if_yes_which_standards) |> 
+  filter(!is.na(if_yes_which_standards)) |> 
+  mutate(fields = str_split(if_yes_which_standards, ', ')) |>
+  unnest() |> 
+  mutate(
+    fields = if_else(str_detect(fields, 'arwin|DwC|dwc'), 'Darwin Core', fields),
+    fields = if_else(str_detect(fields, ' know - I just get'), NA, fields)
+    ) |> 
+  filter(!is.na(fields)) |> 
+  group_by(fields) |> 
+  summarise(count = n()) |> 
+  arrange(count) |> 
+  mutate(fields = forcats::as_factor(fields))
+
+plot_count(other_standard_used, do_you_use_other_standards_for_metadata, count, 'Do you use other standards') +
+    plot_count(other_standard_names, fields, count, 'Which other standards used') + 
+  plot_annotation(tag_levels = 'A')
+```
+
+Most of the whole set of responders did not use other standards, and of those that did, there was a wide range of metadata standards used - with Darwin Core being the particular stand out.
+
+Improvements desired in these other standards were varied, but a common request was better interlinking between different standards.
+
+```{r}
+data_raw |> 
+  select(is_there_anything_you_wish_to_expand_upon_from_any_of_the_questions_on_the_survey_or_in_general_about_sequencing_data_metadata) |> 
+  filter(!is.na(is_there_anything_you_wish_to_expand_upon_from_any_of_the_questions_on_the_survey_or_in_general_about_sequencing_data_metadata)) |> 
+  rename(`Any further comments` = is_there_anything_you_wish_to_expand_upon_from_any_of_the_questions_on_the_survey_or_in_general_about_sequencing_data_metadata) |> 
+  kableExtra::kable()
+```
+
+## Discussion
+
+In total we had 56 responders, mostly from 'High-Income economy' countries and with a strong European focus.
+As expected due to the context of the standard, most responders worked within genomics, metagenomics, and/or metatranscriptomics.
+**Interestingly, most responders are working at a Post-doctoral level (or equivalent) or higher career stage.**
+The reason for this is unclear, but could be something that should be investigated further, could this be due to:
+
+- A lack of training in metadata annotation?
+- A generational or visibility factor (e.g. MIxS is now 20 years old)
+- Experience level (e.g. many Ph.D. students may not encounter annotating their data until upload at the end of their projects)
+- Expected responsibilities (e.g. if metadata annotation/data upload is left to employees with more engineering roles)
+
+Across all responders, only 50% had heard of MIxS, and those who had had mostly had learnt about the standards through word-of-mouth through Peers or exposure from services implementing the standard.
+All responders who had heard of MIxS had used it - mostly in the role of a data uploader or downloader at INSDC repositories (EBI-ENA, NCBI-SRA etc.).
+**This indicates that targeting 'consumers' as potential 'starting points' maybe an ideal starting point in prioritising which project documentation to developer, and could raise more interest in contributing to the project.**
+
+Most responders who were aware of MIxS indicated they primarily got their information about MIxS from the MIxS GitHub repository ([https://github.com/GenomicsStandardsConsortium/mixs](https://github.com/GenomicsStandardsConsortium/mixs)) and associated project website ([https://genomicsstandardsconsortium.github.io/mixs/](https://genomicsstandardsconsortium.github.io/mixs/)), or third-party implementers such as ENA or SRA, rather than the GSC website ([https://www.gensc.org/](https://genomicsstandardsconsortium.github.io/mixs/)) or academic publications. 
+**This therefore suggests that the most suitable place for MIxS documentation would be on the MIxS GitHub repository.**
+
+In terms of familiarity with the project, almost all responders familiar with MIxS understood what a MIxS _checklist_ was, however the concepts of an _extension_ or _term_ were less well known.
+**This suggests that information about basic MIxS concepts need to be better described or more clearly placed to ensure understanding of how the standard works at a fundamental level.**
+
+The MIMS, MIMAG, and MIMARKS checklists from human or host-associated samples were the most commonly used by responders.
+This likely reflects the original history and background of the project, that primarily came out of microbiology-related communities.
+**The popularity of MIMS, MIMAG, and MIMARK checklists could be used to guide what types of examples or training material could be developed in an improved MIxS documentation framework, but also sources of potential test users of such material.**
+
+While the vast majority of responders have not previously contributed to MIxS, more than a third were interested in doing so (either via a term or extension).
+**The main factors for not previously contributing was simply time or not knowing how to contribute (with a smaller number not knowing whether they were welcome to do so).**
+For the small number of responders (2) who had previously contributed, their largest obstacles had been an unclear submission process and being unfamiliar with the new LinkML schema framework MIxS recently transition to.
+This was reflected with less than half of the responders knowing about this transition, and thus are potentially unaware of the benefits.
+**Despite these factors, the vast majority of responders were still interested in contributing to MIxS in some form - highlighting the relevancy of the project and it's aims to responders.**
+
+A common forward-looking feedback given by multiple responders was an interest in seeing more interoperability and alignment between different standards, with the Darwin Core metadata standard being the most popular non-MIxS standard being utilised by responders.
+
+## Acknowledgements
+
+This report was supported by the NFDI4Microbiota Flexfund 'MIxS-UX', funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – 460129525.
