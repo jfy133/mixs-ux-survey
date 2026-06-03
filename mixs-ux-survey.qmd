@@ -29,8 +29,6 @@ The MIxS checklists aim to greatly enrich the contextual annotation around DNA a
 The results from this survey will be used to help guide the NFDI4Microbiota 'MIxS-UX' FlexFund project improve the documentation around MIxS.
 
 ```{r}
-#| output-fold: true
-#| output-summary: '(Click to see dependencies used to generate notebook)'
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -41,7 +39,6 @@ library(forcats)
 library(kableExtra)
 library(patchwork)
 
-sessionInfo()
 ```
 
 ```{r}
@@ -764,3 +761,13 @@ A common forward-looking feedback given by multiple responders was an interest i
 ## Acknowledgements
 
 This report was supported by the NFDI4Microbiota Flexfund 'MIxS-UX', funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – 460129525.
+
+## Appendix
+
+### Notebook environment and dependencies
+
+```{r}
+#| output-fold: true
+#| output-summary: '(Click to see dependencies used to generate notebook)'
+sessionInfo()
+```
