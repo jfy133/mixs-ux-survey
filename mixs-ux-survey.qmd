@@ -162,10 +162,15 @@ Again the largest portion of responders come out of Germany, reflecting the visi
 We asked what career state the responder was in, and if they were associated with any relevant MIxS consortia.
 
 ```{r fig.width=10, fig.height=4}
+
+career_order <- c("Masters student", "PhD Student", "PostDoc", "Assistant professor", "Professor", "Other")
+
 analysis_career <- data_raw |> 
   select(what_career_stage_are_you_in_or_equivalent) |> 
+  mutate(what_career_stage_are_you_in_or_equivalent = factor(what_career_stage_are_you_in_or_equivalent, levels = rev(career_order))) |>  
   group_by(what_career_stage_are_you_in_or_equivalent) |> 
   summarise(count = n())
+
 
 consortia_membership <- data_raw |> 
   select(are_you_a_member_of_any_of_the_following_consortia) |> 
@@ -593,8 +598,13 @@ We also asked all responders familiar with MIxS that had considered to contribut
 considering_contrib_what_stops <- data_raw |> 
   select(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you) |> 
   filter(!is.na(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you)) |> 
-  mutate(fields = str_split(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you, ', ')) |>
-  unnest() |> 
+  mutate(
+    fields = str_split(if_you_considered_contributing_to_m_ix_s_but_decided_not_to_contribute_what_stopped_you, ', '),
+    ) |>
+  unnest() |>
+  mutate(
+    fields = if_else(fields == '/', 'I have never considered contributing', fields)
+  ) |> 
   group_by(fields) |> 
   summarise(count = n()) |> 
   arrange(count) |> 
