@@ -1,4 +1,4 @@
-# mixs-ux-survey-2025
+# mixs-ux-survey-2026
 
 Results report (Quarto) from  MIxS-UX survey 2026.
 
